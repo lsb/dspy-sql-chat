@@ -116,6 +116,88 @@ QUESTION_TEMPLATES = [
         "question": "How many authors from {affiliation} published at {conference}?",
         "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = '{affiliation}' AND Conference = '{conference}'"
     },
+
+    # Self-JOIN queries (finding co-authors)
+    {
+        "question": "Who were the co-authors of {author}?",
+        "sql": "SELECT DISTINCT p2.Author FROM paper_authorships p1 JOIN paper_authorships p2 ON p1.Title = p2.Title WHERE p1.Author = '{author}' AND p2.Author != '{author}'"
+    },
+    {
+        "question": "Which authors collaborated with {author} at {conference}?",
+        "sql": "SELECT DISTINCT p2.Author FROM paper_authorships p1 JOIN paper_authorships p2 ON p1.Title = p2.Title AND p1.Conference = p2.Conference WHERE p1.Author = '{author}' AND p2.Author != '{author}' AND p1.Conference = '{conference}'"
+    },
+    {
+        "question": "How many co-authors did {author} have?",
+        "sql": "SELECT COUNT(DISTINCT p2.Author) FROM paper_authorships p1 JOIN paper_authorships p2 ON p1.Title = p2.Title WHERE p1.Author = '{author}' AND p2.Author != '{author}'"
+    },
+    {
+        "question": "Which authors from {affiliation} published together?",
+        "sql": "SELECT DISTINCT p1.Author, p2.Author FROM paper_authorships p1 JOIN paper_authorships p2 ON p1.Title = p2.Title WHERE p1.Affiliation = '{affiliation}' AND p2.Affiliation = '{affiliation}' AND p1.Author < p2.Author"
+    },
+    {
+        "question": "What papers have authors from multiple affiliations?",
+        "sql": "SELECT DISTINCT p1.Title FROM paper_authorships p1 JOIN paper_authorships p2 ON p1.Title = p2.Title WHERE p1.Affiliation != p2.Affiliation"
+    },
+
+    # Subquery queries
+    {
+        "question": "Which authors published more than the average number of papers?",
+        "sql": "SELECT Author, COUNT(*) as paper_count FROM paper_authorships GROUP BY Author HAVING COUNT(*) > (SELECT AVG(cnt) FROM (SELECT COUNT(*) as cnt FROM paper_authorships GROUP BY Author))"
+    },
+    {
+        "question": "What papers were published in the year with the most publications?",
+        "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = (SELECT Year FROM paper_authorships GROUP BY Year ORDER BY COUNT(*) DESC LIMIT 1)"
+    },
+    {
+        "question": "Which affiliations had more papers than {affiliation}?",
+        "sql": "SELECT Affiliation, COUNT(*) as cnt FROM paper_authorships GROUP BY Affiliation HAVING COUNT(*) > (SELECT COUNT(*) FROM paper_authorships WHERE Affiliation = '{affiliation}')"
+    },
+    {
+        "question": "Who are the authors who published every year from {year1} to {year2}?",
+        "sql": "SELECT Author FROM paper_authorships WHERE Year BETWEEN {year1} AND {year2} GROUP BY Author HAVING COUNT(DISTINCT Year) = {year2} - {year1} + 1"
+    },
+
+    # HAVING clause queries (more complex aggregations)
+    {
+        "question": "Which authors published more than 5 papers?",
+        "sql": "SELECT Author, COUNT(*) as paper_count FROM paper_authorships GROUP BY Author HAVING COUNT(*) > 5 ORDER BY paper_count DESC"
+    },
+    {
+        "question": "Which affiliations have published at all three conferences?",
+        "sql": "SELECT Affiliation FROM paper_authorships GROUP BY Affiliation HAVING COUNT(DISTINCT Conference) = 3"
+    },
+    {
+        "question": "Which authors published at {conference} in multiple years?",
+        "sql": "SELECT Author FROM paper_authorships WHERE Conference = '{conference}' GROUP BY Author HAVING COUNT(DISTINCT Year) > 1"
+    },
+    {
+        "question": "Which papers have more than 3 authors?",
+        "sql": "SELECT Title, COUNT(DISTINCT Author) as author_count FROM paper_authorships GROUP BY Title HAVING COUNT(DISTINCT Author) > 3"
+    },
+    {
+        "question": "Which years had more than 5000 papers published?",
+        "sql": "SELECT Year, COUNT(*) as paper_count FROM paper_authorships GROUP BY Year HAVING COUNT(*) > 5000"
+    },
+
+    # Complex WHERE with multiple conditions
+    {
+        "question": "Which authors from {affiliation} published at {conference} after {year}?",
+        "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = '{affiliation}' AND Conference = '{conference}' AND Year > {year}"
+    },
+    {
+        "question": "How many papers were published at {conference} between {year1} and {year2} by authors from {affiliation}?",
+        "sql": "SELECT COUNT(DISTINCT Title) FROM paper_authorships WHERE Conference = '{conference}' AND Year BETWEEN {year1} AND {year2} AND Affiliation = '{affiliation}'"
+    },
+
+    # Set operations (INTERSECT/EXCEPT via subqueries)
+    {
+        "question": "Which authors published at {conference} but not at ICML?",
+        "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = '{conference}' AND Author NOT IN (SELECT Author FROM paper_authorships WHERE Conference = 'ICML')"
+    },
+    {
+        "question": "Which authors published in both {year1} and {year2}?",
+        "sql": "SELECT DISTINCT p1.Author FROM paper_authorships p1 JOIN paper_authorships p2 ON p1.Author = p2.Author WHERE p1.Year = {year1} AND p2.Year = {year2}"
+    },
 ]
 
 

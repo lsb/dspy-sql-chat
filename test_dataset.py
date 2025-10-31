@@ -88,3 +88,16 @@ def test_query_types_coverage(dataset):
     # Should have GROUP BY queries
     group_by_queries = sum(1 for q in sql_queries if "GROUP BY" in q)
     assert group_by_queries > 0, "No GROUP BY queries found"
+
+    # Should have JOIN queries
+    join_queries = sum(1 for q in sql_queries if "JOIN" in q)
+    assert join_queries > 0, "No JOIN queries found"
+    assert join_queries >= 10, f"Only {join_queries} JOIN queries, expected at least 10"
+
+    # Should have HAVING clauses
+    having_queries = sum(1 for q in sql_queries if "HAVING" in q)
+    assert having_queries > 0, "No HAVING queries found"
+
+    # Should have subqueries
+    subquery_queries = sum(1 for q in sql_queries if q.count("SELECT") > 1)
+    assert subquery_queries > 0, "No subquery queries found"
