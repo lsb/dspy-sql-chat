@@ -3,6 +3,12 @@ import dspy
 from db import create_db
 
 
+# Model configuration
+OLLAMA_MODEL = "ollama_chat/qwen3:4b-instruct-2507-q4_K_M"
+OLLAMA_API_BASE = "http://localhost:11434"
+MAX_TOKENS = 4096  # Ensure enough tokens for thinking/reasoning
+
+
 class TextToSQL(dspy.Signature):
     """Translate natural language queries to SQL for the paper_authorships table.
 
@@ -19,12 +25,12 @@ class TextToSQL(dspy.Signature):
 
 
 def setup_dspy_ollama():
-    """Configure DSPy to use Ollama with qwen3:4b-instruct-2507-q4_K_M."""
+    """Configure DSPy to use Ollama with the configured model."""
     lm = dspy.LM(
-        "ollama_chat/qwen3:4b-instruct-2507-q4_K_M",
-        api_base="http://localhost:11434",
+        OLLAMA_MODEL,
+        api_base=OLLAMA_API_BASE,
         api_key="",
-        max_tokens=4096  # Ensure enough tokens for thinking/reasoning
+        max_tokens=MAX_TOKENS
     )
     dspy.configure(lm=lm)
     return lm
