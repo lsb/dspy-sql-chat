@@ -1,0 +1,182 @@
+{"question": "How many different conferences are in the database?", "sql": "SELECT COUNT(DISTINCT Conference) FROM paper_authorships"}
+{"question": "How many authors from University of California published at NeurIPS?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'University of California' AND Conference = 'NeurIPS'"}
+{"question": "Which affiliation has the most papers?", "sql": "SELECT Affiliation, COUNT(*) as paper_count FROM paper_authorships GROUP BY Affiliation ORDER BY paper_count DESC LIMIT 1"}
+{"question": "How many papers per conference?", "sql": "SELECT Conference, COUNT(*) as paper_count FROM paper_authorships GROUP BY Conference"}
+{"question": "What papers did Richard Gao write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Richard Gao'"}
+{"question": "Which authors are affiliated with Leibniz Universit\u00e4t Hannover?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'Leibniz Universit\u00e4t Hannover'"}
+{"question": "What years are covered in the dataset?", "sql": "SELECT DISTINCT Year FROM paper_authorships ORDER BY Year"}
+{"question": "What papers were published at NeurIPS after 2022?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year > 2022"}
+{"question": "How many total years of data do we have?", "sql": "SELECT COUNT(DISTINCT Year) FROM paper_authorships"}
+{"question": "Which year had the most papers?", "sql": "SELECT Year, COUNT(*) as paper_count FROM paper_authorships GROUP BY Year ORDER BY paper_count DESC LIMIT 1"}
+{"question": "What is the most recent year in the database?", "sql": "SELECT MAX(Year) FROM paper_authorships"}
+{"question": "Which authors are affiliated with UC Irvine?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'UC Irvine'"}
+{"question": "How many papers were published between 2019 and 2020?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2019 AND 2020"}
+{"question": "How many authors from TU Delft published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'TU Delft' AND Conference = 'ICML'"}
+{"question": "How many papers were published in 2024?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2024"}
+{"question": "How many papers were published between 2020 and 2022?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2020 AND 2022"}
+{"question": "Show papers from Yahoo! Inc.", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'Yahoo! Inc.'"}
+{"question": "What papers were published in 2010?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2010"}
+{"question": "How many distinct authors published in 2017?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2017"}
+{"question": "How many papers did Olivia Wiles publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Olivia Wiles'"}
+{"question": "How many distinct authors published in 2006?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2006"}
+{"question": "What papers were published at ICLR after 2007?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICLR' AND Year > 2007"}
+{"question": "What papers did Wei Dai write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Wei Dai'"}
+{"question": "How many authors from University of California published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'University of California' AND Conference = 'ICML'"}
+{"question": "How many distinct authors published in 2011?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2011"}
+{"question": "What papers were published at ICLR after 2020?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICLR' AND Year > 2020"}
+{"question": "Which conference has the most papers?", "sql": "SELECT Conference, COUNT(*) as paper_count FROM paper_authorships GROUP BY Conference ORDER BY paper_count DESC LIMIT 1"}
+{"question": "Which authors are affiliated with MPI for Intelligent Systems, T\u00fcbingen?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'MPI for Intelligent Systems, T\u00fcbingen'"}
+{"question": "How many papers did Martin Genzel publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Martin Genzel'"}
+{"question": "What papers were published in 2015?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2015"}
+{"question": "How many papers are there from ICLR?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Conference = 'ICLR'"}
+{"question": "How many papers were published between 2018 and 2020?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2018 AND 2020"}
+{"question": "Show papers from Technical University Munich", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'Technical University Munich'"}
+{"question": "What are all the conferences in the database?", "sql": "SELECT DISTINCT Conference FROM paper_authorships ORDER BY Conference"}
+{"question": "How many papers are there from ICML?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Conference = 'ICML'"}
+{"question": "Which authors published at all three conferences?", "sql": "SELECT Author FROM paper_authorships GROUP BY Author HAVING COUNT(DISTINCT Conference) = 3"}
+{"question": "Who published papers at ICML in 2015?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICML' AND Year = 2015"}
+{"question": "Which authors are affiliated with Data61?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'Data61'"}
+{"question": "How many papers per year are there?", "sql": "SELECT Year, COUNT(*) as paper_count FROM paper_authorships GROUP BY Year ORDER BY Year"}
+{"question": "What papers were published at ICML after 2012?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICML' AND Year > 2012"}
+{"question": "How many papers were published between 2014 and 2015?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2014 AND 2015"}
+{"question": "How many papers were published in 2014?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2014"}
+{"question": "How many distinct affiliations are represented in NeurIPS?", "sql": "SELECT COUNT(DISTINCT Affiliation) FROM paper_authorships WHERE Conference = 'NeurIPS'"}
+{"question": "What is the earliest year in the database?", "sql": "SELECT MIN(Year) FROM paper_authorships"}
+{"question": "Which authors are affiliated with Rochester Institute of Technology?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'Rochester Institute of Technology'"}
+{"question": "Which authors are affiliated with The Curious AI Company?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'The Curious AI Company'"}
+{"question": "How many authors from London School of Economics published at ICLR?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'London School of Economics' AND Conference = 'ICLR'"}
+{"question": "How many papers were published between 2012 and 2019?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2012 AND 2019"}
+{"question": "Who are the top 10 most prolific authors?", "sql": "SELECT Author, COUNT(*) as paper_count FROM paper_authorships GROUP BY Author ORDER BY paper_count DESC LIMIT 10"}
+{"question": "Show papers from \u00c9cole Normale Sup\u00e9rieure", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = '\u00c9cole Normale Sup\u00e9rieure'"}
+{"question": "Which authors are affiliated with Yahoo! Inc.?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'Yahoo! Inc.'"}
+{"question": "How many papers were published in 2023?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2023"}
+{"question": "What papers were published at ICML after 2015?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICML' AND Year > 2015"}
+{"question": "How many papers were published in 2013?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2013"}
+{"question": "How many authors from Rochester Institute of Technology published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'Rochester Institute of Technology' AND Conference = 'ICML'"}
+{"question": "How many distinct authors published in 2022?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2022"}
+{"question": "What papers were published at ICML after 2024?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICML' AND Year > 2024"}
+{"question": "How many authors from OpenAI / UC Berkeley published at NeurIPS?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'OpenAI / UC Berkeley' AND Conference = 'NeurIPS'"}
+{"question": "Which authors are affiliated with Chongqing University?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'Chongqing University'"}
+{"question": "Who published papers at ICLR in 2019?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICLR' AND Year = 2019"}
+{"question": "How many papers were published between 2006 and 2019?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2006 AND 2019"}
+{"question": "What papers were published at NeurIPS after 2017?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year > 2017"}
+{"question": "How many papers did Lu Bai publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Lu Bai'"}
+{"question": "How many distinct affiliations are represented in ICML?", "sql": "SELECT COUNT(DISTINCT Affiliation) FROM paper_authorships WHERE Conference = 'ICML'"}
+{"question": "What papers did Nevena Lazic write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Nevena Lazic'"}
+{"question": "How many authors from MPI for Intelligent Systems, T\u00fcbingen published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'MPI for Intelligent Systems, T\u00fcbingen' AND Conference = 'ICML'"}
+{"question": "What papers were published at ICLR after 2011?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICLR' AND Year > 2011"}
+{"question": "How many papers were published between 2015 and 2023?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2015 AND 2023"}
+{"question": "How many papers were published in 2016?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2016"}
+{"question": "Show papers from UC Irvine", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'UC Irvine'"}
+{"question": "Who published papers at ICLR in 2017?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICLR' AND Year = 2017"}
+{"question": "How many papers were published in 2007?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2007"}
+{"question": "How many papers were published between 2008 and 2018?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2008 AND 2018"}
+{"question": "How many papers were published between 2012 and 2023?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2012 AND 2023"}
+{"question": "How many papers did Nevena Lazic publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Nevena Lazic'"}
+{"question": "Which authors are affiliated with U. Montreal?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'U. Montreal'"}
+{"question": "What papers were published in 2012?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2012"}
+{"question": "How many distinct authors published in 2015?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2015"}
+{"question": "How many papers were published between 2009 and 2014?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2009 AND 2014"}
+{"question": "How many papers were published in 2010?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2010"}
+{"question": "How many distinct authors published in 2018?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2018"}
+{"question": "What papers were published in 2018?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2018"}
+{"question": "How many papers were published between 2023 and 2024?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2023 AND 2024"}
+{"question": "How many papers are there from NeurIPS?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Conference = 'NeurIPS'"}
+{"question": "How many papers were published in 2009?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2009"}
+{"question": "How many papers were published in 2022?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2022"}
+{"question": "How many distinct authors published in 2014?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2014"}
+{"question": "What papers were published at ICLR after 2015?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICLR' AND Year > 2015"}
+{"question": "How many papers did Xingchen Wan publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Xingchen Wan'"}
+{"question": "What papers were published in 2016?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2016"}
+{"question": "How many distinct authors published in 2008?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2008"}
+{"question": "Who published papers at ICML in 2019?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICML' AND Year = 2019"}
+{"question": "What papers were published in 2021?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2021"}
+{"question": "What papers did Alexander Clegg write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Alexander Clegg'"}
+{"question": "What papers did Changhoon Kim write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Changhoon Kim'"}
+{"question": "Which authors are affiliated with The Australian National University?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'The Australian National University'"}
+{"question": "How many papers did Richard Gao publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Richard Gao'"}
+{"question": "How many papers did Ainesh Bakshi publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Ainesh Bakshi'"}
+{"question": "How many papers were published between 2019 and 2022?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2019 AND 2022"}
+{"question": "How many papers were published in 2017?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2017"}
+{"question": "How many authors from Data61 published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'Data61' AND Conference = 'ICML'"}
+{"question": "How many authors from TU Delft published at ICLR?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'TU Delft' AND Conference = 'ICLR'"}
+{"question": "Who published papers at NeurIPS in 2014?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year = 2014"}
+{"question": "How many papers were published in 2015?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2015"}
+{"question": "What papers were published at NeurIPS after 2023?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year > 2023"}
+{"question": "How many authors from Sun Yat-Sen University published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'Sun Yat-Sen University' AND Conference = 'ICML'"}
+{"question": "Who published papers at NeurIPS in 2019?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year = 2019"}
+{"question": "What papers were published in 2024?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2024"}
+{"question": "Which authors are affiliated with University of California?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'University of California'"}
+{"question": "What papers were published at ICLR after 2024?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICLR' AND Year > 2024"}
+{"question": "How many distinct affiliations are represented in ICLR?", "sql": "SELECT COUNT(DISTINCT Affiliation) FROM paper_authorships WHERE Conference = 'ICLR'"}
+{"question": "How many authors from Leibniz Universit\u00e4t Hannover published at ICLR?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'Leibniz Universit\u00e4t Hannover' AND Conference = 'ICLR'"}
+{"question": "What papers did Xingchen Wan write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Xingchen Wan'"}
+{"question": "How many authors from UC Irvine published at ICLR?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'UC Irvine' AND Conference = 'ICLR'"}
+{"question": "What papers did Di Niu write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Di Niu'"}
+{"question": "What papers did Lu Bai write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Lu Bai'"}
+{"question": "Show papers from The Curious AI Company", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'The Curious AI Company'"}
+{"question": "What papers were published at ICML after 2006?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICML' AND Year > 2006"}
+{"question": "How many papers were published between 2014 and 2020?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2014 AND 2020"}
+{"question": "What papers were published at NeurIPS after 2009?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year > 2009"}
+{"question": "What papers were published at ICML after 2019?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICML' AND Year > 2019"}
+{"question": "Who published papers at ICLR in 2010?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICLR' AND Year = 2010"}
+{"question": "How many authors from IST Austria & NeuralMagic published at NeurIPS?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'IST Austria & NeuralMagic' AND Conference = 'NeurIPS'"}
+{"question": "How many distinct authors published in 2009?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2009"}
+{"question": "How many papers were published between 2015 and 2020?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2015 AND 2020"}
+{"question": "How many authors from Chongqing University published at NeurIPS?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'Chongqing University' AND Conference = 'NeurIPS'"}
+{"question": "How many papers did Wei Dai publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Wei Dai'"}
+{"question": "Who published papers at NeurIPS in 2007?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year = 2007"}
+{"question": "What papers did Olivia Wiles write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Olivia Wiles'"}
+{"question": "How many distinct authors published in 2007?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2007"}
+{"question": "What papers were published in 2014?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2014"}
+{"question": "What papers were published at NeurIPS after 2012?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year > 2012"}
+{"question": "How many papers did Ben Glocker publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Ben Glocker'"}
+{"question": "Who published papers at ICML in 2010?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICML' AND Year = 2010"}
+{"question": "Show papers from Chongqing University", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'Chongqing University'"}
+{"question": "How many papers were published in 2018?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2018"}
+{"question": "How many authors from \u00c9cole Normale Sup\u00e9rieure published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = '\u00c9cole Normale Sup\u00e9rieure' AND Conference = 'ICML'"}
+{"question": "What papers did Gabriel Dulac-Arnold write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Gabriel Dulac-Arnold'"}
+{"question": "How many papers were published in 2019?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2019"}
+{"question": "What papers were published at ICML after 2010?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICML' AND Year > 2010"}
+{"question": "What papers were published at ICLR after 2018?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'ICLR' AND Year > 2018"}
+{"question": "How many papers were published between 2006 and 2024?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2006 AND 2024"}
+{"question": "Show papers from U. Montreal", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'U. Montreal'"}
+{"question": "What papers were published at NeurIPS after 2018?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year > 2018"}
+{"question": "What papers did Ehsan Imani write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Ehsan Imani'"}
+{"question": "How many papers were published between 2008 and 2023?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2008 AND 2023"}
+{"question": "How many papers were published between 2013 and 2023?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2013 AND 2023"}
+{"question": "How many papers were published between 2009 and 2021?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2009 AND 2021"}
+{"question": "What papers were published in 2020?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2020"}
+{"question": "What papers were published in 2006?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2006"}
+{"question": "Show papers from University of California", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'University of California'"}
+{"question": "How many distinct authors published in 2010?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2010"}
+{"question": "How many authors from Data61 published at NeurIPS?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'Data61' AND Conference = 'NeurIPS'"}
+{"question": "How many authors from \u00c9cole Normale Sup\u00e9rieure published at NeurIPS?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = '\u00c9cole Normale Sup\u00e9rieure' AND Conference = 'NeurIPS'"}
+{"question": "Who published papers at ICML in 2007?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICML' AND Year = 2007"}
+{"question": "How many papers did Changhoon Kim publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Changhoon Kim'"}
+{"question": "What papers did Martin Genzel write?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Author = 'Martin Genzel'"}
+{"question": "What papers were published in 2019?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2019"}
+{"question": "How many papers did Jing Yu Koh publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Jing Yu Koh'"}
+{"question": "How many papers did Di Niu publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Di Niu'"}
+{"question": "Which authors are affiliated with Technical University Munich?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'Technical University Munich'"}
+{"question": "Who published papers at ICLR in 2013?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICLR' AND Year = 2013"}
+{"question": "Who published papers at NeurIPS in 2017?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year = 2017"}
+{"question": "How many papers did Bing Su publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Bing Su'"}
+{"question": "How many authors from MPI for Intelligent Systems, T\u00fcbingen published at NeurIPS?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'MPI for Intelligent Systems, T\u00fcbingen' AND Conference = 'NeurIPS'"}
+{"question": "How many papers were published between 2006 and 2012?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year BETWEEN 2006 AND 2012"}
+{"question": "Which authors are affiliated with London School of Economics?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'London School of Economics'"}
+{"question": "How many papers were published in 2012?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2012"}
+{"question": "How many authors from The Curious AI Company published at ICML?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Affiliation = 'The Curious AI Company' AND Conference = 'ICML'"}
+{"question": "How many papers did Pushi Zhang publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Pushi Zhang'"}
+{"question": "How many papers did Hady Elsahar publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Hady Elsahar'"}
+{"question": "How many distinct authors published in 2024?", "sql": "SELECT COUNT(DISTINCT Author) FROM paper_authorships WHERE Year = 2024"}
+{"question": "What papers were published in 2007?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2007"}
+{"question": "Show papers from Weizmann Institute of Science", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Affiliation = 'Weizmann Institute of Science'"}
+{"question": "Who published papers at NeurIPS in 2008?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'NeurIPS' AND Year = 2008"}
+{"question": "Who published papers at ICLR in 2020?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICLR' AND Year = 2020"}
+{"question": "Which authors are affiliated with TU Delft?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Affiliation = 'TU Delft'"}
+{"question": "How many papers were published in 2008?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2008"}
+{"question": "Who published papers at ICLR in 2012?", "sql": "SELECT DISTINCT Author FROM paper_authorships WHERE Conference = 'ICLR' AND Year = 2012"}
+{"question": "What papers were published in 2008?", "sql": "SELECT DISTINCT Title FROM paper_authorships WHERE Year = 2008"}
+{"question": "How many papers were published in 2006?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Year = 2006"}
+{"question": "How many papers did Tianlin Liu publish?", "sql": "SELECT COUNT(*) FROM paper_authorships WHERE Author = 'Tianlin Liu'"}
