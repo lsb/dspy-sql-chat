@@ -1,10 +1,11 @@
 """Text-to-SQL module using DSPy."""
 import dspy
+import re
 from db import create_db
 
 
 # Model configuration
-OLLAMA_MODEL = "ollama_chat/qwen3:4b-instruct-2507-q4_K_M"
+OLLAMA_MODEL = "ollama_chat/qwen3_06b_cpu" # "ollama_chat/qwen3:4b-instruct-2507-q4_K_M"
 OLLAMA_API_BASE = "http://localhost:11434"
 MAX_TOKENS = 4096  # Ensure enough tokens for thinking/reasoning
 
@@ -36,6 +37,35 @@ def setup_dspy_ollama():
     return lm
 
 
+def clean_sql(sql: str) -> str:
+    """
+    Clean SQL output from the model.
+
+    Different models may add extra formatting, markers, or multiple statements.
+    This function extracts just the SQL query.
+
+    Args:
+        sql: Raw SQL output from the model
+
+    Returns:
+        Cleaned SQL query string
+    """
+    # Remove common completion markers
+    sql = re.sub(r'\[\[.*?\]\]', '', sql, flags=re.IGNORECASE)
+
+    # Split on semicolon and take first statement
+    sql = sql.split(';')[0].strip()
+
+    # Remove any trailing/leading whitespace
+    sql = sql.strip()
+
+    # Remove any markdown code block markers
+    sql = re.sub(r'^```sql?\s*', '', sql, flags=re.IGNORECASE)
+    sql = re.sub(r'\s*```$', '', sql)
+
+    return sql
+
+
 def translate_to_sql(question: str) -> str:
     """
     Translate a natural language question to SQL.
@@ -52,7 +82,8 @@ def translate_to_sql(question: str) -> str:
     # Get the SQL translation
     result = predictor(natural_language_query=question)
 
-    return result.sql_query
+    # Clean the SQL output
+    return clean_sql(result.sql_query)
 
 
 def query_database(question: str) -> tuple[str, list]:
