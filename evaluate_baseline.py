@@ -61,7 +61,7 @@ def main():
 
     # Create predictor
     print("\n3. Creating predictor...")
-    predictor = dspy.Predict(TextToSQL)
+    predictor = dspy.ChainOfThought(TextToSQL)
 
     # Use dspy.Evaluate for both modes (same code path)
     print("\n4. Evaluating baseline...")
@@ -79,6 +79,34 @@ def main():
 
     print("\n" + "=" * 80)
     print(f"Baseline Accuracy: {score:.1f}%")
+    print("=" * 80)
+
+    # split 20% of the dataset for a validation set
+    val_size = int(len(all_examples) * 0.2)
+    train_examples = all_examples[val_size:]
+    val_examples = all_examples[:val_size]
+
+    optimizer = dspy.GEPA(
+        metric=sql_correctness_metric,
+        reflection_lm=REFLECTION_LM,
+        track_stats=True,
+        max_full_evals=1 if DEVELOPMENT else 5,
+    )
+
+    optimized_predictor = optimizer.compile(
+        predictor,
+        trainset=train_examples,
+        valset=val_examples,
+    )
+
+    print(optimized_predictor)
+    print(optimized_predictor.predict.signature.instructions)
+
+    optimized_result = evaluator(optimized_predictor)
+    optimized_score = optimized_result if isinstance(optimized_result, (int, float)) else float(optimized_result)
+
+    print("\n" + "=" * 80)
+    print(f"Optimized Baseline Accuracy: {optimized_score:.1f}%")
     print("=" * 80)
 
     # Manual examination of failures

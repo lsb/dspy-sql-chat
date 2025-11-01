@@ -63,7 +63,7 @@ def results_match(pred_results, gold_results, pred_sql=None, gold_sql=None):
         return dspy.Prediction(score=0.0, feedback="Comparison failed")
 
 
-def sql_correctness_metric(example, pred, trace=None):
+def sql_correctness_metric(example, prediction, trace=None, pred_name=None, pred_trace=None):
     """
     Evaluate predicted SQL correctness.
 
@@ -75,11 +75,11 @@ def sql_correctness_metric(example, pred, trace=None):
     """
     try:
         # Handle case where prediction might not have sql_query attribute
-        if not hasattr(pred, 'sql_query') or pred.sql_query is None:
+        if not hasattr(prediction, 'sql_query') or prediction.sql_query is None:
             return dspy.Prediction(score=0.0, feedback="No SQL query in prediction")
 
         # Clean the predicted SQL
-        pred_sql = clean_sql(pred.sql_query)
+        pred_sql = clean_sql(prediction.sql_query)
         gold_sql = example.sql_query
 
         # Check if SQL is identical (after normalization)
