@@ -1,0 +1,111 @@
+"""Sophisticated SQL evaluation metrics."""
+import sqlite3
+from db import create_db
+from text_to_sql import clean_sql
+import dspy
+
+def normalize_sql(sql: str) -> str:
+    """Normalize SQL for comparison (remove extra whitespace, lowercase keywords, etc.)"""
+    # Remove extra whitespace
+    sql = ' '.join(sql.split())
+    # Normalize to uppercase for comparison
+    return sql.upper().strip()
+
+
+def results_match(pred_results, gold_results, pred_sql=None, gold_sql=None):
+    """
+    Check if results match semantically, allowing for both row and column reordering.
+
+    Returns:
+    - 1.0 if results are identical (same order, same columns)
+    - 0.999 if results have same data but different row/column order
+    - 0.0 if results differ
+    """
+    # Fast path: exact match
+    if pred_results == gold_results:
+        return dspy.Prediction(score=1.0, feedback="Exact match")
+
+    # Quick validation
+    if not pred_results or not gold_results:
+        return dspy.Prediction(score=0.0, feedback="One is empty, other is not")
+
+    if len(pred_results) != len(gold_results):
+        return dspy.Prediction(score=0.0, feedback="Different number of rows")
+
+    if len(pred_results[0]) != len(gold_results[0]):
+        return dspy.Prediction(score=0.0, feedback="Different number of columns")
+
+    # Not exactly the same, check if semantically equivalent
+    try:
+        # Check for row reordering: convert to sets of tuples
+        if set(pred_results) == set(gold_results):
+            return dspy.Prediction(score=0.999, feedback="Row reordering")
+
+        # Check for column reordering: convert each row to frozenset, then compare sets
+        if set(frozenset(row) for row in pred_results) == set(frozenset(row) for row in gold_results):
+            return dspy.Prediction(score=0.999, feedback="Column reordering")
+
+        # Different results - provide detailed feedback
+        pred_sample = pred_results[:3]  # First 3 rows
+        gold_sample = gold_results[:3]  # First 3 rows
+        
+        feedback_parts = ["Different results"]
+        if pred_sql and gold_sql:
+            feedback_parts.append(f"Predicted SQL: {pred_sql}")
+            feedback_parts.append(f"Expected SQL: {gold_sql}")
+        
+        feedback_parts.append(f"Predicted sample ({len(pred_results)} rows): {pred_sample}")
+        feedback_parts.append(f"Expected sample ({len(gold_results)} rows): {gold_sample}")
+        
+        return dspy.Prediction(score=0.0, feedback=" | ".join(feedback_parts))
+    except (TypeError, AttributeError):
+        # If comparison fails (unhashable types), not a match
+        return dspy.Prediction(score=0.0, feedback="Comparison failed")
+
+
+def sql_correctness_metric(example, pred, trace=None):
+    """
+    Evaluate predicted SQL correctness.
+
+    Returns a dspy.Prediction with:
+    - 1.0 if SQL is identical or produces identical results
+    - 0.999 if SQL produces same data with different row/column order
+    - 0.001 if SQL executes but produces different results
+    - 0.0 if SQL fails to execute
+    """
+    try:
+        # Handle case where prediction might not have sql_query attribute
+        if not hasattr(pred, 'sql_query') or pred.sql_query is None:
+            return dspy.Prediction(score=0.0, feedback="No SQL query in prediction")
+
+        # Clean the predicted SQL
+        pred_sql = clean_sql(pred.sql_query)
+        gold_sql = example.sql_query
+
+        # Check if SQL is identical (after normalization)
+        if normalize_sql(pred_sql) == normalize_sql(gold_sql):
+            return dspy.Prediction(score=1.0, feedback="Identical SQL")
+
+        conn = create_db()
+        cursor = conn.cursor()
+
+        try:
+            # Execute predicted SQL
+            cursor.execute(pred_sql)
+            pred_results = cursor.fetchall()
+
+            # Execute gold SQL
+            cursor.execute(gold_sql)
+            gold_results = cursor.fetchall()
+
+            # Compare results semantically
+            return results_match(pred_results, gold_results, pred_sql, gold_sql)
+
+        except Exception as e:
+            # SQL failed to execute
+            return dspy.Prediction(score=0.0, feedback=f"SQL execution failed: {str(e)}")
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"Error in metric: {e}")
+        return dspy.Prediction(score=0.0, feedback=f"Metric error: {str(e)}")
