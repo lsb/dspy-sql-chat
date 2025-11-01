@@ -8,11 +8,13 @@ from sql_metric import sql_correctness_metric
 
 # Check if running in development mode
 DEVELOPMENT = os.environ.get('DEVELOPMENT', '0') == '1'
-REFINEMENT_LM = dspy.LM(
+REFLECTION_LM = dspy.LM(
     "ollama_chat/gptoss20b-cpu",
     api_base=OLLAMA_API_BASE,
     api_key="",
     max_tokens=123456,
+    timeout=86400,
+    stream_timeout=86400,
 )
 
 def load_dataset(filepath="question_sql_pairs.jsonl"):
