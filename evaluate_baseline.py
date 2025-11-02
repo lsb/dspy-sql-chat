@@ -54,7 +54,9 @@ def main():
         OLLAMA_MODEL,
         api_base=OLLAMA_API_BASE,
         api_key="",
-        max_tokens=MAX_TOKENS
+        max_tokens=MAX_TOKENS,
+        timeout=86400,
+        stream_timeout=86400,
     )
     dspy.configure(lm=task_model)
     print(f"   Model: {task_model.model}")
