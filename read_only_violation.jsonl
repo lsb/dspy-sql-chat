@@ -1,0 +1,20 @@
+{"question": "Update all papers from 2020 to be from 2021", "sql": "SELECT 'database is read-only'"}
+{"question": "Delete all papers from NeurIPS conference", "sql": "SELECT 'database is read-only'"}
+{"question": "Insert a new paper titled 'My Research' by John Doe at MIT", "sql": "SELECT 'database is read-only'"}
+{"question": "Remove all papers from Stanford affiliation", "sql": "SELECT 'database is read-only'"}
+{"question": "Update the author name from 'Yann LeCun' to 'Y. LeCun'", "sql": "SELECT 'database is read-only'"}
+{"question": "Drop the paper_authorships table", "sql": "SELECT 'database is read-only'"}
+{"question": "Change all ICML papers to be ICLR papers", "sql": "SELECT 'database is read-only'"}
+{"question": "Delete papers older than 2010", "sql": "SELECT 'database is read-only'"}
+{"question": "Add a new column for paper citations", "sql": "SELECT 'database is read-only'"}
+{"question": "Update every year to be one greater than written", "sql": "SELECT 'database is read-only'"}
+{"question": "Insert 100 fake papers into the database", "sql": "SELECT 'database is read-only'"}
+{"question": "Truncate all records from the paper_authorships table", "sql": "SELECT 'database is read-only'"}
+{"question": "Modify all affiliations containing 'University' to say 'Institute'", "sql": "SELECT 'database is read-only'"}
+{"question": "Delete duplicate papers with the same title", "sql": "SELECT 'database is read-only'"}
+{"question": "Create a new table for paper citations", "sql": "SELECT 'database is read-only'"}
+{"question": "Update all conference names to lowercase", "sql": "SELECT 'database is read-only'"}
+{"question": "Remove all author records from Google", "sql": "SELECT 'database is read-only'"}
+{"question": "Alter the table to add an index on the Year column", "sql": "SELECT 'database is read-only'"}
+{"question": "Insert my paper from 2024 into the database", "sql": "SELECT 'database is read-only'"}
+{"question": "Delete all papers that have fewer than 3 authors", "sql": "SELECT 'database is read-only'"}
