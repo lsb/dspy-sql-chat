@@ -10,24 +10,6 @@ import json
 import dspy
 
 
-def load_dataset(filepath):
-    """
-    Load a JSONL dataset file.
-
-    Args:
-        filepath: Path to the JSONL file
-
-    Returns:
-        List of dicts with 'question' and 'sql' keys
-    """
-    examples = []
-    with open(filepath, 'r') as f:
-        for line in f:
-            pair = json.loads(line)
-            examples.append(pair)
-    return examples
-
-
 def load_dataset_as_dspy_examples(filepath):
     """
     Load a JSONL dataset file as DSPy Examples.
@@ -95,24 +77,11 @@ def load_combined_dataset(development_mode=False):
         ro_train = readonly_violations[ro_val_size:]
         ro_val = readonly_violations[:ro_val_size]
 
-        # Calculate how many times to duplicate violations to match legitimate count
-        total_violations_train = len(pol_train) + len(ro_train)
-        if total_violations_train > 0:
-            duplication_factor = len(leg_train) // total_violations_train
-            remainder = len(leg_train) % total_violations_train
-        else:
-            duplication_factor = 0
-            remainder = 0
-
-        # Duplicate violation examples
-        duplicated_violations = []
-        for _ in range(duplication_factor):
-            duplicated_violations.extend(pol_train)
-            duplicated_violations.extend(ro_train)
-        # Add partial violations to make up the remainder
-        if remainder > 0:
-            all_violations = pol_train + ro_train
-            duplicated_violations.extend(all_violations[:remainder])
+        # Duplicate violations to match legitimate count
+        all_violations = pol_train + ro_train
+        duplication_factor = len(leg_train) // len(all_violations)
+        remainder = len(leg_train) % len(all_violations)
+        duplicated_violations = (all_violations * duplication_factor) + all_violations[:remainder]
 
         # Combine training and validation sets
         train_examples = leg_train + duplicated_violations

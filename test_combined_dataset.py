@@ -1,5 +1,5 @@
 """Test the combined dataset loading functionality."""
-from dataset_loader import load_dataset
+from dataset_loader import load_dataset_as_dspy_examples, load_combined_dataset
 
 
 def test_dataset_loading():
@@ -8,11 +8,11 @@ def test_dataset_loading():
     print("Testing Combined Dataset Loading")
     print("=" * 80)
 
-    # Load all three datasets
-    print("\n1. Loading datasets...")
-    legitimate = load_dataset("legitimate.jsonl")
-    policy_violations = load_dataset("content_policy_violation.jsonl")
-    readonly_violations = load_dataset("read_only_violation.jsonl")
+    # Load individual datasets as DSPy examples
+    print("\n1. Loading individual datasets as DSPy examples...")
+    legitimate = load_dataset_as_dspy_examples("legitimate.jsonl")
+    policy_violations = load_dataset_as_dspy_examples("content_policy_violation.jsonl")
+    readonly_violations = load_dataset_as_dspy_examples("read_only_violation.jsonl")
 
     print(f"   Legitimate examples: {len(legitimate)}")
     print(f"   Content policy violations: {len(policy_violations)}")
@@ -24,106 +24,61 @@ def test_dataset_loading():
     assert len(readonly_violations) == 20, f"Expected 20 read-only violations, got {len(readonly_violations)}"
     print("   ✓ All datasets loaded with expected sizes")
 
-    # Test development mode split (5+5+5 train, 5+5+5 val)
-    print("\n2. Testing development mode split...")
-    train_dev = legitimate[:5] + policy_violations[:5] + readonly_violations[:5]
-    val_dev = legitimate[5:10] + policy_violations[5:10] + readonly_violations[5:10]
+    # Test DSPy Example structure
+    print("\n2. Testing DSPy Example structure...")
+    example = legitimate[0]
+    assert hasattr(example, 'natural_language_query'), "Missing natural_language_query field"
+    assert hasattr(example, 'sql_query'), "Missing sql_query field"
+    print(f"   Example query: {example.natural_language_query[:60]}...")
+    print(f"   Example SQL: {example.sql_query[:60]}...")
+    print("   ✓ DSPy Examples have correct structure")
 
-    print(f"   Training examples: {len(train_dev)} (expected 15)")
-    print(f"   Validation examples: {len(val_dev)} (expected 15)")
+    # Test development mode
+    print("\n3. Testing development mode (5+5+5 train, 5+5+5 val)...")
+    train_dev, val_dev = load_combined_dataset(development_mode=True)
     assert len(train_dev) == 15, f"Expected 15 training examples, got {len(train_dev)}"
     assert len(val_dev) == 15, f"Expected 15 validation examples, got {len(val_dev)}"
     print("   ✓ Development mode split correct")
 
-    # Test full mode split (25% val, 75% train)
-    print("\n3. Testing full mode split...")
+    # Test full mode
+    print("\n4. Testing full mode (25% val, duplicate violations)...")
+    train_full, val_full = load_combined_dataset(development_mode=False)
 
-    # Split legitimate
-    leg_val_size = int(len(legitimate) * 0.25)
-    leg_train = legitimate[leg_val_size:]
-    leg_val = legitimate[:leg_val_size]
-    print(f"   Legitimate: {len(leg_train)} train, {len(leg_val)} val")
-
-    # Split policy violations
-    pol_val_size = int(len(policy_violations) * 0.25)
-    pol_train = policy_violations[pol_val_size:]
-    pol_val = policy_violations[:pol_val_size]
-    print(f"   Policy violations: {len(pol_train)} train, {len(pol_val)} val")
-
-    # Split read-only violations
-    ro_val_size = int(len(readonly_violations) * 0.25)
-    ro_train = readonly_violations[ro_val_size:]
-    ro_val = readonly_violations[:ro_val_size]
-    print(f"   Read-only violations: {len(ro_train)} train, {len(ro_val)} val")
-
-    # Calculate duplication
-    total_violations_train = len(pol_train) + len(ro_train)
-    duplication_factor = len(leg_train) // total_violations_train
-    remainder = len(leg_train) % total_violations_train
-
-    print(f"\n   Total training violations: {total_violations_train}")
-    print(f"   Legitimate training examples: {len(leg_train)}")
-    print(f"   Duplication factor: {duplication_factor}")
-    print(f"   Remainder: {remainder}")
-
-    # Duplicate violation examples
-    duplicated_violations = []
-    for _ in range(duplication_factor):
-        duplicated_violations.extend(pol_train)
-        duplicated_violations.extend(ro_train)
-    if remainder > 0:
-        all_violations = pol_train + ro_train
-        duplicated_violations.extend(all_violations[:remainder])
-
-    train_full = leg_train + duplicated_violations
-    val_full = leg_val + pol_val + ro_val
-
-    print(f"\n   Final training set: {len(train_full)} examples")
-    print(f"   Final validation set: {len(val_full)} examples")
-
-    # Verify the training set has balanced legitimate and violations
-    expected_train_size = len(leg_train) * 2  # Should be roughly 2x legitimate count
-    assert len(train_full) == expected_train_size, f"Expected ~{expected_train_size} training examples, got {len(train_full)}"
+    # Expected counts:
+    # - Legitimate: 75 train, 25 val
+    # - Policy violations: 15 train, 5 val
+    # - Read-only violations: 15 train, 5 val
+    # - Training violations duplicated to match legitimate: 75
+    # - Total train: 75 + 75 = 150
+    # - Total val: 25 + 5 + 5 = 35
+    assert len(train_full) == 150, f"Expected 150 training examples, got {len(train_full)}"
+    assert len(val_full) == 35, f"Expected 35 validation examples, got {len(val_full)}"
     print("   ✓ Full mode split correct")
 
-    # Test data structure
-    print("\n4. Testing data structure...")
-    for dataset_name, dataset in [("legitimate", legitimate[:1]),
-                                   ("policy_violations", policy_violations[:1]),
-                                   ("readonly_violations", readonly_violations[:1])]:
-        example = dataset[0]
-        assert 'question' in example, f"{dataset_name} missing 'question' field"
-        assert 'sql' in example, f"{dataset_name} missing 'sql' field"
-        print(f"   ✓ {dataset_name} has correct structure")
-
-    # Test violation responses
+    # Test violation SQL responses
     print("\n5. Testing violation responses...")
+    policy_example = policy_violations[0]
+    readonly_example = readonly_violations[0]
 
-    # Check policy violations return correct message
-    for pv in policy_violations:
-        assert pv['sql'] == "SELECT 'query violates content policy'", \
-            f"Policy violation has wrong SQL: {pv['sql']}"
-    print("   ✓ All policy violations return correct message")
+    assert policy_example.sql_query == "SELECT 'query violates content policy'", \
+        f"Policy violation has wrong SQL: {policy_example.sql_query}"
+    assert readonly_example.sql_query == "SELECT 'database is read-only'", \
+        f"Read-only violation has wrong SQL: {readonly_example.sql_query}"
+    print("   ✓ All violation responses correct")
 
-    # Check read-only violations return correct message
-    for rv in readonly_violations:
-        assert rv['sql'] == "SELECT 'database is read-only'", \
-            f"Read-only violation has wrong SQL: {rv['sql']}"
-    print("   ✓ All read-only violations return correct message")
-
-    # Show sample examples from each category
+    # Show sample examples
     print("\n6. Sample examples:")
     print("\n   Legitimate:")
-    print(f"   Q: {legitimate[0]['question']}")
-    print(f"   SQL: {legitimate[0]['sql'][:80]}...")
+    print(f"   Q: {legitimate[0].natural_language_query}")
+    print(f"   SQL: {legitimate[0].sql_query[:80]}...")
 
     print("\n   Content Policy Violation:")
-    print(f"   Q: {policy_violations[0]['question']}")
-    print(f"   SQL: {policy_violations[0]['sql']}")
+    print(f"   Q: {policy_violations[0].natural_language_query}")
+    print(f"   SQL: {policy_violations[0].sql_query}")
 
     print("\n   Read-Only Violation:")
-    print(f"   Q: {readonly_violations[0]['question']}")
-    print(f"   SQL: {readonly_violations[0]['sql']}")
+    print(f"   Q: {readonly_violations[0].natural_language_query}")
+    print(f"   SQL: {readonly_violations[0].sql_query}")
 
     print("\n" + "=" * 80)
     print("All tests passed! ✓")
