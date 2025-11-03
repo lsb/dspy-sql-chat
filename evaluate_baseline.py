@@ -1,10 +1,10 @@
 """Simple baseline evaluation using dspy.Evaluate."""
-import json
 import os
 import dspy
 from text_to_sql import TextToSQL, OLLAMA_MODEL, OLLAMA_API_BASE, MAX_TOKENS, clean_sql
 from db import create_db
 from sql_metric import sql_correctness_metric
+from dataset_loader import load_combined_dataset
 
 # Check if running in development mode
 DEVELOPMENT = os.environ.get('DEVELOPMENT', '0') == '1'
@@ -17,36 +17,19 @@ REFLECTION_LM = dspy.LM(
     stream_timeout=86400,
 )
 
-def load_dataset(filepath="question_sql_pairs.jsonl"):
-    """Load the question-SQL pairs dataset as DSPy Examples."""
-    examples = []
-    with open(filepath, 'r') as f:
-        for line in f:
-            pair = json.loads(line)
-            # Create DSPy Example with input and output fields
-            example = dspy.Example(
-                natural_language_query=pair['question'],
-                sql_query=pair['sql']
-            ).with_inputs('natural_language_query')
-            examples.append(example)
-    return examples
-
 
 def main():
     """Run baseline evaluation."""
-    mode = "Development (20 examples)" if DEVELOPMENT else "Full Dataset"
+    mode = "Development (15 train + 15 val)" if DEVELOPMENT else "Full Dataset"
     print("=" * 80)
     print(f"DSPy Text-to-SQL Baseline Evaluation - {mode}")
     print("=" * 80)
 
     # Load dataset
     print("\n1. Loading dataset...")
-    if DEVELOPMENT:
-        # Use first 20 examples for development
-        all_examples = load_dataset("question_sql_pairs.jsonl")[:20]
-    else:
-        all_examples = load_dataset("question_sql_pairs.jsonl")
-    print(f"   Loaded {len(all_examples)} examples")
+    train_examples, val_examples = load_combined_dataset(development_mode=DEVELOPMENT)
+    all_examples = train_examples + val_examples
+    print(f"   Loaded {len(all_examples)} total examples")
 
     # Set up language model
     print("\n2. Setting up language model...")
@@ -83,10 +66,10 @@ def main():
     print(f"Baseline Accuracy: {score:.1f}%")
     print("=" * 80)
 
-    # split 20% of the dataset for a validation set
-    val_size = int(len(all_examples) * 0.2)
-    train_examples = all_examples[val_size:]
-    val_examples = all_examples[:val_size]
+    # Train and validation sets are already split by load_combined_dataset()
+    print(f"\n5. Training with GEPA optimizer...")
+    print(f"   Training set: {len(train_examples)} examples")
+    print(f"   Validation set: {len(val_examples)} examples")
 
     optimizer = dspy.GEPA(
         metric=sql_correctness_metric,
@@ -113,7 +96,7 @@ def main():
 
     # Manual examination of failures
     num_to_examine = len(all_examples) if DEVELOPMENT else 20
-    print(f"\n5. Examining {'all' if DEVELOPMENT else 'first 20'} examples...")
+    print(f"\n6. Examining {'all' if DEVELOPMENT else 'first 20'} examples...")
     failures = []
     successes = []
 
