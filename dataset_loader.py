@@ -7,12 +7,7 @@ This module provides functions to load and combine datasets from three sources:
 """
 
 import json
-
-try:
-    import dspy
-    DSPY_AVAILABLE = True
-except ImportError:
-    DSPY_AVAILABLE = False
+import dspy
 
 
 def load_dataset(filepath):
@@ -42,13 +37,7 @@ def load_dataset_as_dspy_examples(filepath):
 
     Returns:
         List of dspy.Example objects with natural_language_query and sql_query fields
-
-    Raises:
-        ImportError: If dspy is not available
     """
-    if not DSPY_AVAILABLE:
-        raise ImportError("dspy is required for load_dataset_as_dspy_examples. Install it with: pip install dspy")
-
     examples = []
     with open(filepath, 'r') as f:
         for line in f:
@@ -79,13 +68,7 @@ def load_combined_dataset(development_mode=False):
 
     Returns:
         Tuple of (train_examples, val_examples) as dspy.Example objects
-
-    Raises:
-        ImportError: If dspy is not available
     """
-    if not DSPY_AVAILABLE:
-        raise ImportError("dspy is required for load_combined_dataset. Install it with: pip install dspy")
-
     # Load all three datasets
     legitimate = load_dataset_as_dspy_examples("legitimate.jsonl")
     policy_violations = load_dataset_as_dspy_examples("content_policy_violation.jsonl")
@@ -145,19 +128,10 @@ if __name__ == "__main__":
     # Test the dataset loading
     print("Testing dataset loading...")
 
-    if DSPY_AVAILABLE:
-        print("\nDevelopment mode:")
-        train, val = load_combined_dataset(development_mode=True)
-        print(f"Train: {len(train)}, Val: {len(val)}")
+    print("\nDevelopment mode:")
+    train, val = load_combined_dataset(development_mode=True)
+    print(f"Train: {len(train)}, Val: {len(val)}")
 
-        print("\nFull mode:")
-        train, val = load_combined_dataset(development_mode=False)
-        print(f"Train: {len(train)}, Val: {len(val)}")
-    else:
-        print("\nDSPy not available, testing basic load_dataset only:")
-        legitimate = load_dataset("legitimate.jsonl")
-        print(f"Loaded {len(legitimate)} legitimate examples")
-        policy_violations = load_dataset("content_policy_violation.jsonl")
-        print(f"Loaded {len(policy_violations)} policy violation examples")
-        readonly_violations = load_dataset("read_only_violation.jsonl")
-        print(f"Loaded {len(readonly_violations)} read-only violation examples")
+    print("\nFull mode:")
+    train, val = load_combined_dataset(development_mode=False)
+    print(f"Train: {len(train)}, Val: {len(val)}")
