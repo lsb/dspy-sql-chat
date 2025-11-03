@@ -1,15 +1,5 @@
 """Test the combined dataset loading functionality."""
-import json
-
-
-def load_dataset(filepath):
-    """Load a JSONL dataset and return the examples."""
-    examples = []
-    with open(filepath, 'r') as f:
-        for line in f:
-            pair = json.loads(line)
-            examples.append(pair)
-    return examples
+from dataset_loader import load_dataset
 
 
 def test_dataset_loading():

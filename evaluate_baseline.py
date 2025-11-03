@@ -1,10 +1,10 @@
 """Simple baseline evaluation using dspy.Evaluate."""
-import json
 import os
 import dspy
 from text_to_sql import TextToSQL, OLLAMA_MODEL, OLLAMA_API_BASE, MAX_TOKENS, clean_sql
 from db import create_db
 from sql_metric import sql_correctness_metric
+from dataset_loader import load_combined_dataset
 
 # Check if running in development mode
 DEVELOPMENT = os.environ.get('DEVELOPMENT', '0') == '1'
@@ -16,93 +16,6 @@ REFLECTION_LM = dspy.LM(
     timeout=86400,
     stream_timeout=86400,
 )
-
-def load_dataset(filepath="question_sql_pairs.jsonl"):
-    """Load the question-SQL pairs dataset as DSPy Examples."""
-    examples = []
-    with open(filepath, 'r') as f:
-        for line in f:
-            pair = json.loads(line)
-            # Create DSPy Example with input and output fields
-            example = dspy.Example(
-                natural_language_query=pair['question'],
-                sql_query=pair['sql']
-            ).with_inputs('natural_language_query')
-            examples.append(example)
-    return examples
-
-
-def load_combined_dataset(development_mode=False):
-    """
-    Load and combine datasets from three sources.
-
-    In development mode:
-        - 5 legitimate, 5 policy violations, 5 read-only violations for training (15 total)
-        - 5 legitimate, 5 policy violations, 5 read-only violations for validation (15 total)
-
-    In full mode:
-        - Use 25% of each dataset for validation, 75% for training
-        - Duplicate training violations to match the number of legitimate training examples
-
-    Args:
-        development_mode: If True, use small subset for development
-
-    Returns:
-        Tuple of (train_examples, val_examples)
-    """
-    # Load all three datasets
-    legitimate = load_dataset("legitimate.jsonl")
-    policy_violations = load_dataset("content_policy_violation.jsonl")
-    readonly_violations = load_dataset("read_only_violation.jsonl")
-
-    if development_mode:
-        # Development mode: 5 from each for training, 5 from each for validation
-        train_examples = legitimate[:5] + policy_violations[:5] + readonly_violations[:5]
-        val_examples = legitimate[5:10] + policy_violations[5:10] + readonly_violations[5:10]
-    else:
-        # Full mode: 25% validation, 75% training
-        # Split legitimate
-        leg_val_size = int(len(legitimate) * 0.25)
-        leg_train = legitimate[leg_val_size:]
-        leg_val = legitimate[:leg_val_size]
-
-        # Split policy violations
-        pol_val_size = int(len(policy_violations) * 0.25)
-        pol_train = policy_violations[pol_val_size:]
-        pol_val = policy_violations[:pol_val_size]
-
-        # Split read-only violations
-        ro_val_size = int(len(readonly_violations) * 0.25)
-        ro_train = readonly_violations[ro_val_size:]
-        ro_val = readonly_violations[:ro_val_size]
-
-        # Calculate how many times to duplicate violations to match legitimate count
-        total_violations_train = len(pol_train) + len(ro_train)
-        if total_violations_train > 0:
-            duplication_factor = len(leg_train) // total_violations_train
-            remainder = len(leg_train) % total_violations_train
-        else:
-            duplication_factor = 0
-            remainder = 0
-
-        # Duplicate violation examples
-        duplicated_violations = []
-        for _ in range(duplication_factor):
-            duplicated_violations.extend(pol_train)
-            duplicated_violations.extend(ro_train)
-        # Add partial violations to make up the remainder
-        if remainder > 0:
-            all_violations = pol_train + ro_train
-            duplicated_violations.extend(all_violations[:remainder])
-
-        # Combine training and validation sets
-        train_examples = leg_train + duplicated_violations
-        val_examples = leg_val + pol_val + ro_val
-
-    print(f"   Training examples: {len(train_examples)}")
-    print(f"   Validation examples: {len(val_examples)}")
-
-    return train_examples, val_examples
 
 
 def main():
