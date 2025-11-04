@@ -1,7 +1,7 @@
 """Simple baseline evaluation using dspy.Evaluate."""
 import os
 import dspy
-from text_to_sql import TextToSQL, OLLAMA_MODEL, OLLAMA_API_BASE, MAX_TOKENS, clean_sql
+from text_to_sql import TextToSQL, OLLAMA_MODEL, OLLAMA_API_BASE, MAX_TOKENS
 from db import create_db
 from sql_metric import sql_correctness_metric
 from dataset_loader import load_combined_dataset
@@ -106,7 +106,7 @@ def main():
 
         # Extract score from dspy.Prediction object
         score = metric_result.score if hasattr(metric_result, 'score') else float(metric_result)
-        pred_sql = clean_sql(pred.sql_query) if hasattr(pred, 'sql_query') and pred.sql_query else None
+        pred_sql = pred.sql_query if hasattr(pred, 'sql_query') and pred.sql_query else None
 
         # Score >= 0.999 is considered correct
         if score >= 0.999:

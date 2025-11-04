@@ -1,6 +1,5 @@
 """Text-to-SQL module using DSPy."""
 import dspy
-import re
 from db import create_db
 
 
@@ -22,7 +21,7 @@ class TextToSQL(dspy.Signature):
     """
 
     natural_language_query: str = dspy.InputField(desc="A natural language question about the paper_authorships table")
-    sql_query: str = dspy.OutputField(desc="SQL query that answers the question")
+    sql_query: str = dspy.OutputField(desc="A clean SQL query that answers the question. Output only the SQL query itself, with no markdown formatting, no code blocks, no extra text, and no completion markers. Do not include semicolons at the end. The query should be a single valid SQL statement ready to execute.")
 
 
 def setup_dspy_ollama():
@@ -35,35 +34,6 @@ def setup_dspy_ollama():
     )
     dspy.configure(lm=lm)
     return lm
-
-
-def clean_sql(sql: str) -> str:
-    """
-    Clean SQL output from the model.
-
-    Different models may add extra formatting, markers, or multiple statements.
-    This function extracts just the SQL query.
-
-    Args:
-        sql: Raw SQL output from the model
-
-    Returns:
-        Cleaned SQL query string
-    """
-    # Remove common completion markers
-    sql = re.sub(r'\[\[.*?\]\]', '', sql, flags=re.IGNORECASE)
-
-    # Split on semicolon and take first statement
-    sql = sql.split(';')[0].strip()
-
-    # Remove any trailing/leading whitespace
-    sql = sql.strip()
-
-    # Remove any markdown code block markers
-    sql = re.sub(r'^```sql?\s*', '', sql, flags=re.IGNORECASE)
-    sql = re.sub(r'\s*```$', '', sql)
-
-    return sql
 
 
 def translate_to_sql(question: str) -> str:
@@ -82,8 +52,7 @@ def translate_to_sql(question: str) -> str:
     # Get the SQL translation
     result = predictor(natural_language_query=question)
 
-    # Clean the SQL output
-    return clean_sql(result.sql_query)
+    return result.sql_query
 
 
 def query_database(question: str) -> tuple[str, list]:
