@@ -77,8 +77,7 @@ def sql_correctness_metric(example, prediction, trace=None, pred_name=None, pred
         if not hasattr(prediction, 'sql_query') or prediction.sql_query is None:
             return dspy.Prediction(score=0.0, feedback="No SQL query in prediction")
 
-        # Strip whitespace from predicted SQL
-        pred_sql = prediction.sql_query.strip()
+        pred_sql = prediction.sql_query
         gold_sql = example.sql_query
 
         # Check if SQL is identical (after normalization)

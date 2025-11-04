@@ -106,7 +106,7 @@ def main():
 
         # Extract score from dspy.Prediction object
         score = metric_result.score if hasattr(metric_result, 'score') else float(metric_result)
-        pred_sql = pred.sql_query.strip() if hasattr(pred, 'sql_query') and pred.sql_query else None
+        pred_sql = pred.sql_query if hasattr(pred, 'sql_query') and pred.sql_query else None
 
         # Score >= 0.999 is considered correct
         if score >= 0.999:

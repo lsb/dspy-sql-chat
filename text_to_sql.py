@@ -36,22 +36,6 @@ def setup_dspy_ollama():
     return lm
 
 
-def clean_sql(sql: str) -> str:
-    """
-    Minimal SQL cleaning - just strip whitespace.
-
-    The model is now prompted to generate clean SQL directly,
-    so we only need basic whitespace trimming.
-
-    Args:
-        sql: SQL output from the model
-
-    Returns:
-        SQL query string with whitespace trimmed
-    """
-    return sql.strip()
-
-
 def translate_to_sql(question: str) -> str:
     """
     Translate a natural language question to SQL.
@@ -68,8 +52,7 @@ def translate_to_sql(question: str) -> str:
     # Get the SQL translation
     result = predictor(natural_language_query=question)
 
-    # Clean the SQL output
-    return clean_sql(result.sql_query)
+    return result.sql_query
 
 
 def query_database(question: str) -> tuple[str, list]:
