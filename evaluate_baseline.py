@@ -1,15 +1,16 @@
 """Simple baseline evaluation using dspy.Evaluate."""
 import os
 import dspy
-from text_to_sql import TextToSQL, OLLAMA_MODEL, OLLAMA_API_BASE, MAX_TOKENS
+from text_to_sql import TextToSQL, OLLAMA_BASE_MODEL, OLLAMA_API_BASE, MAX_TOKENS
 from db import create_db
 from sql_metric import sql_correctness_metric
 from dataset_loader import load_combined_dataset
 
 # Check if running in development mode
 DEVELOPMENT = os.environ.get('DEVELOPMENT', '0') == '1'
+REFLECTION_LM_MODEL = os.environ.get("REFLECTION_LM_MODEL", "ollama_chat/gpt-oss:20b")
 REFLECTION_LM = dspy.LM(
-    "ollama_chat/gptoss20b-cpu",
+    REFLECTION_LM_MODEL,
     api_base=OLLAMA_API_BASE,
     api_key="",
     max_tokens=123456,
@@ -34,7 +35,7 @@ def main():
     # Set up language model
     print("\n2. Setting up language model...")
     task_model = dspy.LM(
-        OLLAMA_MODEL,
+        OLLAMA_BASE_MODEL,
         api_base=OLLAMA_API_BASE,
         api_key="",
         max_tokens=MAX_TOKENS,

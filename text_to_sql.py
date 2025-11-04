@@ -1,10 +1,11 @@
 """Text-to-SQL module using DSPy."""
+import os
 import dspy
 from db import create_db
 
 
 # Model configuration
-OLLAMA_MODEL = "ollama_chat/qwen3_06b_cpu" # "ollama_chat/qwen3:4b-instruct-2507-q4_K_M"
+OLLAMA_BASE_MODEL = os.environ.get("OLLAMA_BASE_MODEL", "ollama_chat/qwen3:0.6b-q4_K_M")
 OLLAMA_API_BASE = "http://localhost:11434"
 MAX_TOKENS = 4096  # Ensure enough tokens for thinking/reasoning
 
@@ -27,7 +28,7 @@ class TextToSQL(dspy.Signature):
 def setup_dspy_ollama():
     """Configure DSPy to use Ollama with the configured model."""
     lm = dspy.LM(
-        OLLAMA_MODEL,
+        OLLAMA_BASE_MODEL,
         api_base=OLLAMA_API_BASE,
         api_key="",
         max_tokens=MAX_TOKENS
