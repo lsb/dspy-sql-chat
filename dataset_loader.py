@@ -7,6 +7,7 @@ This module provides functions to load and combine datasets from three sources:
 """
 
 import json
+import random
 import dspy
 from db import create_db
 from query_timeout import (
@@ -78,7 +79,7 @@ def filter_slow_queries(examples, timeout_seconds, csv_path="papers.csv"):
     return filtered_examples
 
 
-def load_combined_dataset(development_mode=False):
+def load_combined_dataset(development_mode=False, random_seed=42):
     """
     Load and combine datasets from three sources.
 
@@ -93,8 +94,11 @@ def load_combined_dataset(development_mode=False):
     Legitimate queries are filtered to exclude queries that take longer than 50x
     the baseline query (SELECT COUNT(DISTINCT year) FROM paper_authorships).
 
+    The training set is shuffled using a fixed random seed for reproducibility.
+
     Args:
         development_mode: If True, use small subset for development
+        random_seed: Seed for shuffling training set (default: 42)
 
     Returns:
         Tuple of (train_examples, val_examples) as dspy.Example objects
@@ -146,6 +150,11 @@ def load_combined_dataset(development_mode=False):
         # Combine training and validation sets
         train_examples = leg_train + duplicated_violations
         val_examples = leg_val + pol_val + ro_val
+
+    # Shuffle training set with fixed seed for reproducibility
+    random.seed(random_seed)
+    random.shuffle(train_examples)
+    print(f"   Shuffled training set with seed: {random_seed}")
 
     print(f"   Training examples: {len(train_examples)}")
     print(f"   Validation examples: {len(val_examples)}")
