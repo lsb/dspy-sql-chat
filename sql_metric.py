@@ -2,6 +2,25 @@
 import sqlite3
 from db import create_db
 import dspy
+from query_timeout import (
+    measure_baseline_query_time,
+    execute_query_with_timeout,
+    get_query_timeout
+)
+
+# Initialize baseline time and timeout once at module load
+_baseline_time = None
+_query_timeout = None
+
+
+def _get_query_timeout():
+    """Get or initialize the query timeout value."""
+    global _baseline_time, _query_timeout
+    if _query_timeout is None:
+        _baseline_time = measure_baseline_query_time()
+        _query_timeout = get_query_timeout(_baseline_time, multiplier=50)
+        print(f"[sql_metric] Initialized query timeout: {_query_timeout:.4f}s (50x baseline of {_baseline_time:.4f}s)")
+    return _query_timeout
 
 def normalize_sql(sql: str) -> str:
     """Normalize SQL for comparison (remove extra whitespace, lowercase keywords, etc.)"""
@@ -64,13 +83,16 @@ def results_match(pred_results, gold_results, pred_sql=None, gold_sql=None):
 
 def sql_correctness_metric(example, prediction, trace=None, pred_name=None, pred_trace=None):
     """
-    Evaluate predicted SQL correctness.
+    Evaluate predicted SQL correctness with query timeout.
+
+    Queries are timed out after 50x the baseline query time to prevent
+    hanging on slow queries.
 
     Returns a dspy.Prediction with:
     - 1.0 if SQL is identical or produces identical results
     - 0.999 if SQL produces same data with different row/column order
     - 0.001 if SQL executes but produces different results
-    - 0.0 if SQL fails to execute
+    - 0.0 if SQL fails to execute or times out
     """
     try:
         # Handle case where prediction might not have sql_query attribute
@@ -84,24 +106,33 @@ def sql_correctness_metric(example, prediction, trace=None, pred_name=None, pred
         if normalize_sql(pred_sql) == normalize_sql(gold_sql):
             return dspy.Prediction(score=1.0, feedback="Identical SQL")
 
+        # Get query timeout
+        timeout = _get_query_timeout()
+
         conn = create_db()
-        cursor = conn.cursor()
 
         try:
-            # Execute predicted SQL
-            cursor.execute(pred_sql)
-            pred_results = cursor.fetchall()
+            # Execute predicted SQL with timeout
+            pred_success, pred_results, pred_error = execute_query_with_timeout(
+                conn, pred_sql, timeout_seconds=timeout
+            )
 
-            # Execute gold SQL
-            cursor.execute(gold_sql)
-            gold_results = cursor.fetchall()
+            if not pred_success:
+                conn.close()
+                return dspy.Prediction(score=0.0, feedback=f"Predicted SQL failed: {pred_error}")
+
+            # Execute gold SQL with timeout
+            gold_success, gold_results, gold_error = execute_query_with_timeout(
+                conn, gold_sql, timeout_seconds=timeout
+            )
+
+            if not gold_success:
+                conn.close()
+                return dspy.Prediction(score=0.0, feedback=f"Gold SQL failed: {gold_error}")
 
             # Compare results semantically
             return results_match(pred_results, gold_results, pred_sql, gold_sql)
 
-        except Exception as e:
-            # SQL failed to execute
-            return dspy.Prediction(score=0.0, feedback=f"SQL execution failed: {str(e)}")
         finally:
             conn.close()
     except Exception as e:
