@@ -4,10 +4,11 @@ This module provides utilities to:
 1. Measure baseline query execution time
 2. Execute queries with configurable timeouts
 3. Filter slow queries during dataset loading
+
+Uses SQLite's progress handler for thread-safe timeout implementation.
 """
 
 import sqlite3
-import signal
 import time
 from typing import Optional, Tuple, List, Any
 from db import create_db
@@ -16,11 +17,6 @@ from db import create_db
 class QueryTimeoutError(Exception):
     """Raised when a query execution exceeds the timeout limit."""
     pass
-
-
-def _timeout_handler(signum, frame):
-    """Signal handler for query timeouts."""
-    raise QueryTimeoutError("Query execution timed out")
 
 
 def measure_baseline_query_time(csv_path: str = "papers.csv") -> float:
@@ -55,7 +51,11 @@ def execute_query_with_timeout(
     timeout_seconds: Optional[float] = None
 ) -> Tuple[bool, Optional[List[Any]], Optional[str]]:
     """
-    Execute a SQL query with an optional timeout.
+    Execute a SQL query with an optional timeout using SQLite's progress handler.
+
+    This implementation is thread-safe and works in any thread, not just the main thread.
+    SQLite's progress handler is called periodically during query execution, allowing
+    us to check if the timeout has been exceeded.
 
     Args:
         conn: SQLite database connection
@@ -79,24 +79,36 @@ def execute_query_with_timeout(
         except Exception as e:
             return False, None, str(e)
 
-    # Set up timeout using signal alarm (Unix/Linux only)
-    old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+    # Thread-safe timeout using SQLite's progress handler
+    start_time = time.time()
 
-    # Set alarm with ceiling to ensure at least 1 second
-    signal.alarm(max(1, int(timeout_seconds + 0.5)))
+    def progress_handler():
+        """Called periodically by SQLite during query execution."""
+        if time.time() - start_time > timeout_seconds:
+            # Returning non-zero causes SQLite to abort the query
+            return 1
+        return 0
+
+    # Set progress handler to be called every N virtual machine instructions
+    # Lower N = more frequent checks but more overhead. 1000 is a reasonable balance.
+    conn.set_progress_handler(progress_handler, 1000)
 
     try:
         cursor.execute(query)
         results = cursor.fetchall()
-        signal.alarm(0)  # Cancel the alarm
-        signal.signal(signal.SIGALRM, old_handler)  # Restore old handler
+        # Clear the progress handler
+        conn.set_progress_handler(None, 0)
         return True, results, None
-    except QueryTimeoutError:
-        signal.signal(signal.SIGALRM, old_handler)  # Restore old handler
-        return False, None, f"Query timed out after {timeout_seconds:.2f} seconds"
+    except sqlite3.OperationalError as e:
+        # Clear the progress handler
+        conn.set_progress_handler(None, 0)
+        # Check if it was our timeout that caused the error
+        if time.time() - start_time > timeout_seconds:
+            return False, None, f"Query timed out after {timeout_seconds:.2f} seconds"
+        return False, None, str(e)
     except Exception as e:
-        signal.alarm(0)  # Cancel the alarm
-        signal.signal(signal.SIGALRM, old_handler)  # Restore old handler
+        # Clear the progress handler
+        conn.set_progress_handler(None, 0)
         return False, None, str(e)
 
 
