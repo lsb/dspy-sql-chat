@@ -5,6 +5,7 @@ from text_to_sql import TextToSQL, OLLAMA_BASE_MODEL, OLLAMA_API_BASE, MAX_TOKEN
 from db import create_db
 from sql_metric import sql_correctness_metric
 from dataset_loader import load_combined_dataset
+from pathlib import Path
 
 # Check if running in development mode
 DEVELOPMENT = os.environ.get('DEVELOPMENT', '0') == '1'
@@ -49,6 +50,9 @@ def main():
     print("\n3. Creating predictor...")
     predictor = dspy.ChainOfThought(TextToSQL)
 
+    print(f"\nDefault predictor instructions:\n{predictor.predict.signature.instructions}")
+    Path("baseline_instructions.txt").write_text(predictor.predict.signature.instructions)
+
     # Use dspy.Evaluate for both modes (same code path)
     print("\n4. Evaluating baseline...")
     evaluator = dspy.Evaluate(
@@ -76,7 +80,7 @@ def main():
         metric=sql_correctness_metric,
         reflection_lm=REFLECTION_LM,
         track_stats=True,
-        max_full_evals=1 if DEVELOPMENT else 5,
+        max_full_evals=1 if DEVELOPMENT else 20,
     )
 
     optimized_predictor = optimizer.compile(
@@ -87,6 +91,7 @@ def main():
 
     print(optimized_predictor)
     print(optimized_predictor.predict.signature.instructions)
+    Path("optimized_baseline_instructions.txt").write_text(optimized_predictor.predict.signature.instructions)
 
     optimized_result = evaluator(optimized_predictor)
     optimized_score = optimized_result if isinstance(optimized_result, (int, float)) else float(optimized_result)
