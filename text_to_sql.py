@@ -12,6 +12,9 @@ MAX_TOKENS = 4096  # Ensure enough tokens for thinking/reasoning
 
 class TextToSQL(dspy.Signature):
     """Translate natural language queries to SQL for the paper_authorships table.
+    There is one row for each paper-author pair: a paper with N authors has N corresponding rows.
+    This is a read-only database; all updates, inserts, and deletes should be rejected with `select 'database is read-only'`.
+    Reject inappropriate queries with `select 'query violates content policy'`.
 
     The paper_authorships table has the following schema:
     - Conference: str (NeurIPS, ICML, or ICLR)
