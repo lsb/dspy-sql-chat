@@ -18,8 +18,8 @@ def _get_query_timeout():
     global _baseline_time, _query_timeout
     if _query_timeout is None:
         _baseline_time = measure_baseline_query_time()
-        _query_timeout = get_query_timeout(_baseline_time, multiplier=50)
-        print(f"[sql_metric] Initialized query timeout: {_query_timeout:.4f}s (50x baseline of {_baseline_time:.4f}s)")
+        _query_timeout = get_query_timeout(_baseline_time, multiplier=200)
+        print(f"[sql_metric] Initialized query timeout: {_query_timeout:.4f}s (200x baseline of {_baseline_time:.4f}s)")
     return _query_timeout
 
 def normalize_sql(sql: str) -> str:

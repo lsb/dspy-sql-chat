@@ -106,8 +106,8 @@ def load_combined_dataset(development_mode=False, random_seed=42):
     # Measure baseline query time for timeout calculation
     print("Measuring baseline query time...")
     baseline_time = measure_baseline_query_time()
-    timeout = get_query_timeout(baseline_time, multiplier=50)
-    print(f"   Baseline time: {baseline_time:.4f}s, Timeout: {timeout:.4f}s (50x baseline)")
+    timeout = get_query_timeout(baseline_time, multiplier=200)
+    print(f"   Baseline time: {baseline_time:.4f}s, Timeout: {timeout:.4f}s (200x baseline)")
 
     # Load all three datasets
     print("Loading datasets...")

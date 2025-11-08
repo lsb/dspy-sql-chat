@@ -112,13 +112,13 @@ def execute_query_with_timeout(
         return False, None, str(e)
 
 
-def get_query_timeout(baseline_time: float, multiplier: int = 50) -> float:
+def get_query_timeout(baseline_time: float, multiplier: int = 200) -> float:
     """
     Calculate query timeout based on baseline query time.
 
     Args:
         baseline_time: Time taken by baseline query in seconds
-        multiplier: Multiplier for timeout calculation (default: 50)
+        multiplier: Multiplier for timeout calculation (default: 200)
 
     Returns:
         Timeout in seconds
