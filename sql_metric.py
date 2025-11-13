@@ -2,25 +2,7 @@
 import sqlite3
 from db import create_db
 import dspy
-from query_timeout import (
-    measure_baseline_query_time,
-    execute_query_with_timeout,
-    get_query_timeout
-)
-
-# Initialize baseline time and timeout once at module load
-_baseline_time = None
-_query_timeout = None
-
-
-def _get_query_timeout():
-    """Get or initialize the query timeout value."""
-    global _baseline_time, _query_timeout
-    if _query_timeout is None:
-        _baseline_time = measure_baseline_query_time()
-        _query_timeout = get_query_timeout(_baseline_time, multiplier=200)
-        print(f"[sql_metric] Initialized query timeout: {_query_timeout:.4f}s (200x baseline of {_baseline_time:.4f}s)")
-    return _query_timeout
+from query_timeout import execute_query_with_timeout
 
 def normalize_sql(sql: str) -> str:
     """Normalize SQL for comparison (remove extra whitespace, lowercase keywords, etc.)"""
@@ -82,11 +64,7 @@ def results_match(pred_results, gold_results, pred_sql=None, gold_sql=None):
 
 
 def sql_correctness_metric(example, prediction, trace=None, pred_name=None, pred_trace=None):
-    """
-    Evaluate predicted SQL correctness with query timeout.
-
-    Queries are timed out after 50x the baseline query time to prevent
-    hanging on slow queries.
+    """Evaluate predicted SQL correctness with 10-second query timeout.
 
     Returns a dspy.Prediction with:
     - 1.0 if SQL is identical or produces identical results
@@ -106,15 +84,12 @@ def sql_correctness_metric(example, prediction, trace=None, pred_name=None, pred
         if normalize_sql(pred_sql) == normalize_sql(gold_sql):
             return dspy.Prediction(score=1.0, feedback="Identical SQL")
 
-        # Get query timeout
-        timeout = _get_query_timeout()
-
         conn = create_db()
 
         try:
             # Execute predicted SQL with timeout
             pred_success, pred_results, pred_error = execute_query_with_timeout(
-                conn, pred_sql, timeout_seconds=timeout
+                conn, pred_sql, timeout_seconds=10.0
             )
 
             if not pred_success:
@@ -123,7 +98,7 @@ def sql_correctness_metric(example, prediction, trace=None, pred_name=None, pred
 
             # Execute gold SQL with timeout
             gold_success, gold_results, gold_error = execute_query_with_timeout(
-                conn, gold_sql, timeout_seconds=timeout
+                conn, gold_sql, timeout_seconds=10.0
             )
 
             if not gold_success:

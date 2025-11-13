@@ -10,11 +10,7 @@ import json
 import random
 import dspy
 from db import create_db
-from query_timeout import (
-    measure_baseline_query_time,
-    execute_query_with_timeout,
-    get_query_timeout
-)
+from query_timeout import execute_query_with_timeout
 
 
 def load_dataset_as_dspy_examples(filepath):
@@ -40,13 +36,12 @@ def load_dataset_as_dspy_examples(filepath):
     return examples
 
 
-def filter_slow_queries(examples, timeout_seconds, csv_path="papers.csv"):
-    """
-    Filter out examples with SQL queries that exceed the timeout.
+def filter_slow_queries(examples, timeout_seconds=10.0, csv_path="papers.csv"):
+    """Filter out examples with SQL queries that exceed the timeout.
 
     Args:
         examples: List of dspy.Example objects with sql_query field
-        timeout_seconds: Maximum time allowed for query execution
+        timeout_seconds: Maximum time allowed for query execution (default: 10.0)
         csv_path: Path to the CSV file for database creation
 
     Returns:
@@ -80,8 +75,7 @@ def filter_slow_queries(examples, timeout_seconds, csv_path="papers.csv"):
 
 
 def load_combined_dataset(development_mode=False, random_seed=42):
-    """
-    Load and combine datasets from three sources.
+    """Load and combine datasets from three sources.
 
     In development mode:
         - 5 legitimate, 5 policy violations, 5 read-only violations for training (15 total)
@@ -91,8 +85,7 @@ def load_combined_dataset(development_mode=False, random_seed=42):
         - Use 25% of each dataset for validation, 75% for training
         - Duplicate training violations to match the number of legitimate training examples
 
-    Legitimate queries are filtered to exclude queries that take longer than 50x
-    the baseline query (SELECT COUNT(DISTINCT year) FROM paper_authorships).
+    Legitimate queries are filtered to exclude queries that take longer than 10 seconds.
 
     The training set is shuffled using a fixed random seed for reproducibility.
 
@@ -103,12 +96,6 @@ def load_combined_dataset(development_mode=False, random_seed=42):
     Returns:
         Tuple of (train_examples, val_examples) as dspy.Example objects
     """
-    # Measure baseline query time for timeout calculation
-    print("Measuring baseline query time...")
-    baseline_time = measure_baseline_query_time()
-    timeout = get_query_timeout(baseline_time, multiplier=200)
-    print(f"   Baseline time: {baseline_time:.4f}s, Timeout: {timeout:.4f}s (200x baseline)")
-
     # Load all three datasets
     print("Loading datasets...")
     legitimate = load_dataset_as_dspy_examples("legitimate.jsonl")
@@ -117,7 +104,7 @@ def load_combined_dataset(development_mode=False, random_seed=42):
 
     # Filter legitimate queries that exceed timeout
     print(f"Filtering legitimate queries (loaded {len(legitimate)} queries)...")
-    legitimate = filter_slow_queries(legitimate, timeout)
+    legitimate = filter_slow_queries(legitimate, timeout_seconds=10.0)
     print(f"   Kept {len(legitimate)} legitimate queries after filtering")
 
     if development_mode:
