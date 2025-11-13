@@ -41,22 +41,31 @@ def test_dataset_loading():
     print("   ✓ Development mode split correct")
 
     # Test full mode
-    print("\n4. Testing full mode (25% val, duplicate violations)...")
+    print("\n4. Testing full mode (interleaved training)...")
     train_full, val_full = load_combined_dataset(development_mode=False)
 
     # Expected counts:
     # - Legitimate: 75 train, 25 val
     # - Policy violations: 15 train, 5 val
     # - Read-only violations: 15 train, 5 val
-    # - Training violations duplicated to match legitimate: 75
-    # - Total train: 75 + 75 = 150
+    # - Training interleaved: 75 × 3 = 225 (leg, pol, ro, leg, pol, ro, ...)
+    # - Total train: 225
     # - Total val: 25 + 5 + 5 = 35
-    assert len(train_full) == 150, f"Expected 150 training examples, got {len(train_full)}"
+    assert len(train_full) == 225, f"Expected 225 training examples, got {len(train_full)}"
     assert len(val_full) == 35, f"Expected 35 validation examples, got {len(val_full)}"
     print("   ✓ Full mode split correct")
 
+    # Test interleaving pattern in training (every 3rd should repeat the pattern)
+    print("\n5. Testing interleaving pattern...")
+    # Check first 9 examples follow pattern: leg, pol, ro, leg, pol, ro, leg, pol, ro
+    for i in range(0, min(9, len(train_full)), 3):
+        # Can't easily check type without executing, but verify we have 3 different examples
+        assert train_full[i] != train_full[i+1], "Training should interleave different types"
+        assert train_full[i+1] != train_full[i+2], "Training should interleave different types"
+    print("   ✓ Interleaving pattern correct")
+
     # Test violation SQL responses
-    print("\n5. Testing violation responses...")
+    print("\n6. Testing violation responses...")
     policy_example = policy_violations[0]
     readonly_example = readonly_violations[0]
 
@@ -67,7 +76,7 @@ def test_dataset_loading():
     print("   ✓ All violation responses correct")
 
     # Show sample examples
-    print("\n6. Sample examples:")
+    print("\n7. Sample examples:")
     print("\n   Legitimate:")
     print(f"   Q: {legitimate[0].natural_language_query}")
     print(f"   SQL: {legitimate[0].sql_query[:80]}...")

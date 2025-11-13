@@ -9,6 +9,7 @@ This module provides functions to load and combine datasets from three sources:
 import json
 import random
 import dspy
+from itertools import cycle
 from db import create_db
 from query_timeout import execute_query_with_timeout
 
@@ -83,15 +84,13 @@ def load_combined_dataset(development_mode=False, random_seed=42):
 
     In full mode:
         - Use 25% of each dataset for validation, 75% for training
-        - Duplicate training violations to match the number of legitimate training examples
+        - Training interleaves: legitimate, content policy violation, read-only violation (repeating)
 
     Legitimate queries are filtered to exclude queries that take longer than 10 seconds.
 
-    The training set is shuffled using a fixed random seed for reproducibility.
-
     Args:
         development_mode: If True, use small subset for development
-        random_seed: Seed for shuffling training set (default: 42)
+        random_seed: Seed for shuffling before splitting (default: 42)
 
     Returns:
         Tuple of (train_examples, val_examples) as dspy.Example objects
@@ -107,56 +106,42 @@ def load_combined_dataset(development_mode=False, random_seed=42):
     legitimate = filter_slow_queries(legitimate)
     print(f"   Kept {len(legitimate)} legitimate queries after filtering")
 
+    # Shuffle all datasets with fixed seed before splitting
+    random.seed(random_seed)
+    random.shuffle(legitimate)
+    random.shuffle(policy_violations)
+    random.shuffle(readonly_violations)
+
     if development_mode:
         # Development mode: 5 from each for training, 5 from each for validation
-        train_examples = legitimate[:5] + policy_violations[:5] + readonly_violations[:5]
-        val_examples = legitimate[5:10] + policy_violations[5:10] + readonly_violations[5:10]
+        leg_train, leg_val = legitimate[:5], legitimate[5:10]
+        pol_train, pol_val = policy_violations[:5], policy_violations[5:10]
+        ro_train, ro_val = readonly_violations[:5], readonly_violations[5:10]
     else:
         # Full mode: 25% validation, 75% training
-        # Split legitimate
         leg_val_size = int(len(legitimate) * 0.25)
-        leg_train = legitimate[leg_val_size:]
-        leg_val = legitimate[:leg_val_size]
+        leg_train, leg_val = legitimate[leg_val_size:], legitimate[:leg_val_size]
 
-        # Split policy violations
         pol_val_size = int(len(policy_violations) * 0.25)
-        pol_train = policy_violations[pol_val_size:]
-        pol_val = policy_violations[:pol_val_size]
+        pol_train, pol_val = policy_violations[pol_val_size:], policy_violations[:pol_val_size]
 
-        # Split read-only violations
         ro_val_size = int(len(readonly_violations) * 0.25)
-        ro_train = readonly_violations[ro_val_size:]
-        ro_val = readonly_violations[:ro_val_size]
+        ro_train, ro_val = readonly_violations[ro_val_size:], readonly_violations[:ro_val_size]
 
-        # Duplicate violations to match legitimate count
-        all_violations = pol_train + ro_train
-        duplication_factor = len(leg_train) // len(all_violations)
-        remainder = len(leg_train) % len(all_violations)
-        duplicated_violations = (all_violations * duplication_factor) + all_violations[:remainder]
+    # Interleave training examples: leg, pol, ro, leg, pol, ro, ...
+    # Use cycle to repeat violations as needed to match legitimate count
+    train_examples = []
+    pol_cycle = cycle(pol_train)
+    ro_cycle = cycle(ro_train)
+    for leg_example in leg_train:
+        train_examples.append(leg_example)
+        train_examples.append(next(pol_cycle))
+        train_examples.append(next(ro_cycle))
 
-        # Combine training and validation sets
-        train_examples = leg_train + duplicated_violations
-        val_examples = leg_val + pol_val + ro_val
-
-    # Shuffle training set with fixed seed for reproducibility
-    random.seed(random_seed)
-    random.shuffle(train_examples)
-    print(f"   Shuffled training set with seed: {random_seed}")
+    # Combine validation sets (order doesn't matter as much for validation)
+    val_examples = leg_val + pol_val + ro_val
 
     print(f"   Training examples: {len(train_examples)}")
     print(f"   Validation examples: {len(val_examples)}")
 
     return train_examples, val_examples
-
-
-if __name__ == "__main__":
-    # Test the dataset loading
-    print("Testing dataset loading...")
-
-    print("\nDevelopment mode:")
-    train, val = load_combined_dataset(development_mode=True)
-    print(f"Train: {len(train)}, Val: {len(val)}")
-
-    print("\nFull mode:")
-    train, val = load_combined_dataset(development_mode=False)
-    print(f"Train: {len(train)}, Val: {len(val)}")
