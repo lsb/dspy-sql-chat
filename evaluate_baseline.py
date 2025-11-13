@@ -58,7 +58,7 @@ def main():
     evaluator = dspy.Evaluate(
         devset=all_examples,
         metric=sql_correctness_metric,
-        num_threads=1,  # Use 1 thread for stability
+        num_threads=1,  # increase as necessary
         display_progress=True,
         display_table=5  # Show first 5 results
     )
@@ -80,7 +80,7 @@ def main():
         metric=sql_correctness_metric,
         reflection_lm=REFLECTION_LM,
         track_stats=True,
-        max_full_evals=1 if DEVELOPMENT else 20,
+        max_full_evals=1 if DEVELOPMENT else int(os.environ.get("MAX_FULL_EVALS", 20)),
     )
 
     optimized_predictor = optimizer.compile(
