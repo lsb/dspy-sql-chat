@@ -53,13 +53,13 @@ def filter_slow_queries(examples, timeout_seconds=10.0, csv_path="papers.csv"):
     conn = create_db(csv_path)
 
     for i, example in enumerate(examples):
-        success, results, error = execute_query_with_timeout(
+        results, error = execute_query_with_timeout(
             conn,
             example.sql_query,
             timeout_seconds=timeout_seconds
         )
 
-        if success:
+        if results is not None:
             filtered_examples.append(example)
         else:
             skipped_count += 1
@@ -104,7 +104,7 @@ def load_combined_dataset(development_mode=False, random_seed=42):
 
     # Filter legitimate queries that exceed timeout
     print(f"Filtering legitimate queries (loaded {len(legitimate)} queries)...")
-    legitimate = filter_slow_queries(legitimate, timeout_seconds=10.0)
+    legitimate = filter_slow_queries(legitimate)
     print(f"   Kept {len(legitimate)} legitimate queries after filtering")
 
     if development_mode:

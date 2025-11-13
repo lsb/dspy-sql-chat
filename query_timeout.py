@@ -9,7 +9,7 @@ def execute_query_with_timeout(
     conn: sqlite3.Connection,
     query: str,
     timeout_seconds: float = 10.0
-) -> Tuple[bool, Optional[List[Any]], Optional[str]]:
+) -> Tuple[Optional[List[Any]], Optional[str]]:
     """Execute a SQL query with timeout using SQLite's progress handler.
 
     Args:
@@ -18,7 +18,7 @@ def execute_query_with_timeout(
         timeout_seconds: Maximum time allowed for query execution (default: 10.0)
 
     Returns:
-        Tuple of (success, results, error_message)
+        Tuple of (results, error_message). Results is None on error.
     """
     cursor = conn.cursor()
     start_time = time.time()
@@ -37,17 +37,14 @@ def execute_query_with_timeout(
     try:
         cursor.execute(query)
         results = cursor.fetchall()
-        # Clear the progress handler
         conn.set_progress_handler(None, 0)
-        return True, results, None
+        return results, None
     except sqlite3.OperationalError as e:
-        # Clear the progress handler
         conn.set_progress_handler(None, 0)
-        # Check if it was our timeout that caused the error
         if time.time() - start_time > timeout_seconds:
-            return False, None, f"Query timed out after {timeout_seconds:.2f} seconds"
-        return False, None, str(e)
+            return None, f"Query timed out after {timeout_seconds:.2f} seconds"
+        return None, str(e)
     except Exception as e:
         conn.set_progress_handler(None, 0)
-        return False, None, str(e)
+        return None, str(e)
 
