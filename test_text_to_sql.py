@@ -52,7 +52,7 @@ def test_query_years(dspy_setup):
 
 def test_query_total_records(dspy_setup):
     """Test querying for total records."""
-    question = "how many papers are in the database"
+    question = "how many paper authorship records are in the database"
     sql_query, results = query_database(question)
 
     # Should return 172164 records total
