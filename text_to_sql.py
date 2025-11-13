@@ -5,7 +5,7 @@ from db import create_db
 
 
 # Model configuration
-OLLAMA_BASE_MODEL = os.environ.get("OLLAMA_BASE_MODEL", "ollama_chat/qwen3:0.6b-q4_K_M")
+OLLAMA_BASE_MODEL = os.environ.get("OLLAMA_BASE_MODEL", "ollama_chat/gpt-oss:20b")
 OLLAMA_API_BASE = "http://localhost:11434"
 MAX_TOKENS = 4096  # Ensure enough tokens for thinking/reasoning
 
