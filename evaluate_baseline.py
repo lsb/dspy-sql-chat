@@ -160,8 +160,10 @@ def main():
             print(f"\n   {i}. Q: {success['question']}")
             print(f"      SQL: {success['sql']}")
 
-    return score
+    print("\n" + "=" * 80)
+    print(f"Optimized Baseline Accuracy: {optimized_score:.1f}%")
+    print("=" * 80)
 
 
 if __name__ == "__main__":
-    score = main()
+    main()
